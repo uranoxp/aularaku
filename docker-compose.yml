@@ -1,0 +1,142 @@
+services:
+  nginx:
+    image: ${MOODLE_NGINX_IMAGE}
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: nginx-runtime
+      args:
+        MOODLE_GIT_REF: ${MOODLE_GIT_REF}
+    restart: unless-stopped
+    depends_on:
+      php:
+        condition: service_healthy
+    expose:
+      - "80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/healthz >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - moodle_net
+
+  php:
+    image: ${MOODLE_APP_IMAGE}
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: php-runtime
+      args:
+        MOODLE_GIT_REF: ${MOODLE_GIT_REF}
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      MOODLE_RUNTIME_ROLE: web
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - moodledata:/var/www/moodledata
+      - moodle_config:/var/www/moodle-state
+    expose:
+      - "9000"
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /var/www/moodle/config.php && php-fpm -t >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - moodle_net
+
+  cron:
+    image: ${MOODLE_APP_IMAGE}
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      MOODLE_RUNTIME_ROLE: cron
+    depends_on:
+      php:
+        condition: service_healthy
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: >
+      sh -c "while true; do
+      php /var/www/moodle/admin/cli/cron.php || true;
+      sleep 60;
+      done"
+    volumes:
+      - moodledata:/var/www/moodledata
+      - moodle_config:/var/www/moodle-state
+    networks:
+      - moodle_net
+
+  mariadb:
+    image: mariadb:10.11
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MOODLE_DB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${MOODLE_DB_NAME}
+      MARIADB_USER: ${MOODLE_DB_USER}
+      MARIADB_PASSWORD: ${MOODLE_DB_PASSWORD}
+      TZ: ${TZ}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --innodb_file_per_table=1
+      - --max_allowed_packet=256M
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    expose:
+      - "3306"
+    healthcheck:
+      test: ["CMD-SHELL", "healthcheck.sh --connect --innodb_initialized"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    networks:
+      - moodle_net
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: >
+      sh -c "exec redis-server
+      --appendonly yes
+      --save 60 1000
+      ${REDIS_PASSWORD:+--requirepass \"$REDIS_PASSWORD\"}"
+    env_file:
+      - .env
+    volumes:
+      - redis_data:/data
+    expose:
+      - "6379"
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ${REDIS_PASSWORD:+-a \"$REDIS_PASSWORD\"} ping | grep -q PONG"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    networks:
+      - moodle_net
+
+volumes:
+  moodledata:
+  moodle_config:
+  mariadb_data:
+  redis_data:
+
+networks:
+  moodle_net:
+    driver: bridge
