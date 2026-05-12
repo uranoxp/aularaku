@@ -62,7 +62,6 @@ global \$CFG;
 \$CFG->dbtype = 'mariadb';
 \$CFG->dblibrary = 'native';
 \$CFG->dbhost = '${moodle_db_host}';
-\$CFG->dbport = '${moodle_db_port}';
 \$CFG->dbname = '${moodle_db_name}';
 \$CFG->dbuser = '${moodle_db_user}';
 \$CFG->dbpass = '${moodle_db_password}';
@@ -70,12 +69,15 @@ global \$CFG;
 \$CFG->dboptions = array(
   'dbpersist' => 0,
   'dbsocket' => 0,
+  'dbport' => '${moodle_db_port}',
   'dbcollation' => 'utf8mb4_unicode_ci',
 );
 
 \$CFG->wwwroot = '${moodle_url}';
 \$CFG->dataroot = '/var/www/moodledata';
 \$CFG->dirroot = '/var/www/moodle';
+\$CFG->libdir = '/var/www/moodle/public';
+\$CFG->routerconfigured = false;
 \$CFG->admin = 'admin';
 \$CFG->directorypermissions = 02775;
 \$CFG->localcachedir = '/var/www/moodledata/localcache';
