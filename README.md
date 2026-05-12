@@ -163,6 +163,12 @@ Los scripts de este repo cubren:
 - copia local de .env si existe
 ```
 
+Por defecto, los respaldos se guardan en:
+
+```text
+/srv/backups/aulamirai
+```
+
 ### Ejecutar backup completo
 
 ```bash
@@ -172,19 +178,19 @@ Los scripts de este repo cubren:
 ### Restaurar base de datos
 
 ```bash
-./scripts/restore-db.sh ./backups/moodle-db-AAAA-MM-DD_hh-mm-ss.sql.gz
+./scripts/restore-db.sh /srv/backups/aulamirai/moodle-db-AAAA-MM-DD_hh-mm-ss.sql.gz
 ```
 
 ### Restaurar moodledata
 
 ```bash
-./scripts/restore-moodledata.sh ./backups/moodledata-AAAA-MM-DD_hh-mm-ss.tar.gz
+./scripts/restore-moodledata.sh /srv/backups/aulamirai/moodledata-AAAA-MM-DD_hh-mm-ss.tar.gz
 ```
 
 ### Restaurar config.php
 
 ```bash
-./scripts/restore-config.sh ./backups/moodle-config-AAAA-MM-DD_hh-mm-ss.tar.gz
+./scripts/restore-config.sh /srv/backups/aulamirai/moodle-config-AAAA-MM-DD_hh-mm-ss.tar.gz
 ```
 
 ## Actualizacion de Moodle

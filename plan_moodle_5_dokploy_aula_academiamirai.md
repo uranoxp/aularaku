@@ -206,6 +206,12 @@ El flujo minimo de restauracion ya contempla:
 
 Adicionalmente, `full-backup.sh` guarda una copia de `.env` local si existe.
 
+Ruta por defecto de respaldos en el host:
+
+```text
+/srv/backups/aulamirai
+```
+
 ---
 
 ## 8. Referencias oficiales usadas

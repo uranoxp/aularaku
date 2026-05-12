@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BACKUP_DIR="${BACKUP_DIR:-./backups}"
+BACKUP_DIR="${BACKUP_DIR:-/srv/backups/aulamirai}"
 RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-7}"
 DATE="$(date +%Y-%m-%d_%H-%M-%S)"
 
