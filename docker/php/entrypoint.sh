@@ -84,13 +84,13 @@ EOF
 
   if is_true "${MOODLE_REVERSE_PROXY:-1}"; then
     cat >> "${config_file}" <<'EOF'
-\$CFG->reverseproxy = true;
+$CFG->reverseproxy = true;
 EOF
   fi
 
   if is_true "${MOODLE_SSL_PROXY:-1}"; then
     cat >> "${config_file}" <<'EOF'
-\$CFG->sslproxy = true;
+$CFG->sslproxy = true;
 EOF
   fi
 

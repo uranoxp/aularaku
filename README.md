@@ -10,7 +10,7 @@ document root => /var/www/moodle/public
 
 ## Que incluye
 
-- Imagen PHP construida desde el Git oficial de Moodle (`MOODLE_520_STABLE` por defecto).
+- Imagen PHP construida desde el Git oficial de Moodle (`MOODLE_502_STABLE` por defecto).
 - Imagen Nginx derivada del mismo source tree para no depender de un volumen `moodle_code`.
 - `config.php` generado automaticamente en el arranque y persistido fuera de la imagen.
 - Instalacion inicial por CLI con comportamiento idempotente.

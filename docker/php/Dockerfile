@@ -1,17 +1,18 @@
 FROM alpine:3.20 AS moodle-source
 
-ARG MOODLE_GIT_REF=MOODLE_520_STABLE
+ARG MOODLE_GIT_REF=MOODLE_502_STABLE
 
 RUN apk add --no-cache git \
     && git clone --branch "${MOODLE_GIT_REF}" --depth 1 https://github.com/moodle/moodle.git /src/moodle
 
 FROM php:8.3-fpm-alpine AS php-runtime
 
-ARG MOODLE_GIT_REF=MOODLE_520_STABLE
+ARG MOODLE_GIT_REF=MOODLE_502_STABLE
 
 RUN apk add --no-cache \
       bash \
       fcgi \
+      freetype \
       gettext \
       icu-libs \
       libjpeg-turbo \
@@ -66,7 +67,7 @@ CMD ["php-fpm", "-F"]
 
 FROM nginx:1.27-alpine AS nginx-runtime
 
-ARG MOODLE_GIT_REF=MOODLE_520_STABLE
+ARG MOODLE_GIT_REF=MOODLE_502_STABLE
 
 COPY --from=moodle-source /src/moodle /var/www/moodle
 COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf

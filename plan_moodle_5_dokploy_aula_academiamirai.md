@@ -5,7 +5,7 @@
 **Dominio:** `https://aula.academiamirai.mx`  
 **Stack implementado:** Dokploy + Docker Compose + Nginx + PHP-FPM + MariaDB + Redis + Cron  
 **Version objetivo:** Moodle 5.2.x  
-**Referencia Git por defecto:** `MOODLE_520_STABLE`  
+**Referencia Git por defecto:** `MOODLE_502_STABLE`  
 **Zona horaria:** `America/Mexico_City`
 
 ---
