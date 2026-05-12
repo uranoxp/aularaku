@@ -25,7 +25,7 @@ La entrega genera un stack listo para Dokploy con estas decisiones:
 - Instalacion inicial automatizada por CLI
 - Config.php generado en runtime y persistido fuera de la imagen
 - Cron separado
-- Backups de DB + moodledata + config.php
+- Backups de codigo + DB + moodledata + config.php
 ```
 
 ---
@@ -41,10 +41,16 @@ NO usar /var/www/html
 SI usar /var/www/moodle/public
 ```
 
-La imagen de `php` contiene el arbol completo de Moodle en:
+El sitio publicado vive en:
 
 ```text
 /var/www/moodle
+```
+
+La imagen conserva una copia maestra para seed inicial y upgrade manual en:
+
+```text
+/opt/moodle-dist
 ```
 
 Y Nginx sirve el sitio desde:
@@ -87,24 +93,24 @@ PHP-FPM
    ↓
 Moodle 5.2 (/var/www/moodle/public)
    ↓
-MariaDB + Redis + moodledata + config persistido
+MariaDB + Redis + moodle_code + moodledata + config persistido
 ```
 
 ---
 
 ## 5. Decisiones implementadas en el repositorio
 
-### 5.1 Codigo inmutable
+### 5.1 Codigo persistente compartido
 
-El core de Moodle ya no vive en un volumen Docker. Ahora va dentro de las imagenes construidas desde Git oficial.
+El core de Moodle ya no se usa como arbol efimero en runtime. Ahora el sitio usa un volumen persistente compartido en `/var/www/moodle`.
 
 Consecuencia:
 
 ```text
-- No existe volumen moodle_code
-- php y cron comparten la misma imagen base
-- nginx usa otra imagen derivada del mismo build
-- plugins o temas personalizados deben entrar por build
+- Existe volumen moodle_code
+- php, nginx y cron comparten el mismo arbol de codigo
+- plugins y temas instalados desde Moodle sobreviven a redeploys
+- el core embebido en la imagen se usa para seed inicial y upgrades manuales
 ```
 
 ### 5.2 Estado persistente
@@ -112,6 +118,7 @@ Consecuencia:
 El estado mutable queda separado en volumenes:
 
 ```text
+- moodle_code
 - moodledata
 - moodle_config
 - mariadb_data
@@ -125,19 +132,21 @@ El estado mutable queda separado en volumenes:
 En el primer arranque:
 
 ```text
-1. php espera MariaDB y Redis
-2. genera config.php
-3. revisa si la base ya esta instalada
-4. si no existe, ejecuta admin/cli/install_database.php
-5. aplica timezone y corrige el caso installhijacked
-6. arranca php-fpm
+1. php siembra moodle_code desde la imagen si el volumen esta vacio
+2. php espera MariaDB y Redis
+3. genera config.php
+4. revisa si la base ya esta instalada
+5. si no existe, ejecuta admin/cli/install_database.php
+6. aplica timezone y corrige el caso installhijacked
+7. arranca php-fpm
 ```
 
 En redeploys posteriores:
 
 ```text
 no reinstala
-solo reusa config.php y la base ya existente
+no sobreescribe plugins o temas del volumen
+solo reusa codigo, config.php y la base ya existente
 ```
 
 ---
@@ -154,16 +163,24 @@ solo reusa config.php y la base ya existente
 │  │  └─ default.conf
 │  └─ php/
 │     ├─ Dockerfile
+│     ├─ code-version.sh
 │     ├─ entrypoint.sh
-│     └─ opcache.ini
+│     ├─ opcache.ini
+│     ├─ seed-code.sh
+│     └─ sync-core.sh
 └─ scripts/
+   ├─ backup-code.sh
    ├─ backup-config.sh
    ├─ backup-db.sh
    ├─ backup-moodledata.sh
    ├─ full-backup.sh
+   ├─ restore-code.sh
    ├─ restore-config.sh
    ├─ restore-db.sh
-   └─ restore-moodledata.sh
+   ├─ restore-moodledata.sh
+   ├─ seed-code.sh
+   ├─ show-code-version.sh
+   └─ upgrade-core.sh
 ```
 
 ---
@@ -199,6 +216,7 @@ La implementacion deja Redis definido desde variables y configurado en `config.p
 El flujo minimo de restauracion ya contempla:
 
 ```text
+- Codigo persistente
 - Base de datos
 - moodledata
 - config.php persistido

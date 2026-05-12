@@ -11,11 +11,11 @@ document root => /var/www/moodle/public
 ## Que incluye
 
 - Imagen PHP construida desde el Git oficial de Moodle (`MOODLE_502_STABLE` por defecto).
-- Imagen Nginx derivada del mismo source tree para no depender de un volumen `moodle_code`.
+- Volumen persistente compartido para `/var/www/moodle`, visible para `php`, `nginx` y `cron`.
 - `config.php` generado automaticamente en el arranque y persistido fuera de la imagen.
 - Instalacion inicial por CLI con comportamiento idempotente.
 - Redis configurado desde `config.php` para sesiones.
-- Scripts de backup y restauracion para DB, `moodledata` y `config.php`.
+- Scripts de backup y restauracion para codigo, DB, `moodledata` y `config.php`.
 
 ## Estructura
 
@@ -27,9 +27,24 @@ document root => /var/www/moodle/public
 │  ├─ nginx/default.conf
 │  └─ php/
 │     ├─ Dockerfile
+│     ├─ code-version.sh
 │     ├─ entrypoint.sh
-│     └─ opcache.ini
+│     ├─ opcache.ini
+│     ├─ seed-code.sh
+│     └─ sync-core.sh
 └─ scripts/
+   ├─ backup-code.sh
+   ├─ backup-config.sh
+   ├─ backup-db.sh
+   ├─ backup-moodledata.sh
+   ├─ full-backup.sh
+   ├─ restore-code.sh
+   ├─ restore-config.sh
+   ├─ restore-db.sh
+   ├─ restore-moodledata.sh
+   ├─ seed-code.sh
+   ├─ show-code-version.sh
+   └─ upgrade-core.sh
 ```
 
 ## Variables principales
@@ -59,19 +74,20 @@ REDIS_SESSION_PREFIX
 En el primer deploy:
 
 1. `php` espera a MariaDB y Redis.
-2. Genera `config.php` en `/var/www/moodle-state/config.php`.
-3. Crea o actualiza el enlace simbolico hacia `/var/www/moodle/config.php`.
-4. Verifica si la tabla `${MOODLE_DB_PREFIX}config` ya existe.
-5. Si no existe y `MOODLE_AUTO_INSTALL=1`, ejecuta `admin/cli/install_database.php`.
-6. Ajusta timezone via `admin/cli/cfg.php`.
-7. Limpia el `lastip` del admin para evitar el error `installhijacked`.
-8. Arranca `php-fpm`.
+2. Si el volumen `moodle_code` esta vacio, lo siembra desde la copia oficial incluida en la imagen.
+3. Genera `config.php` en `/var/www/moodle-state/config.php`.
+4. Crea o actualiza el enlace simbolico hacia `/var/www/moodle/config.php`.
+5. Verifica si la tabla `${MOODLE_DB_PREFIX}config` ya existe.
+6. Si no existe y `MOODLE_AUTO_INSTALL=1`, ejecuta `admin/cli/install_database.php`.
+7. Ajusta timezone via `admin/cli/cfg.php`.
+8. Limpia el `lastip` del admin para evitar el error `installhijacked`.
+9. Arranca `php-fpm`.
 
 En redeploys posteriores:
 
 ```text
 no reinstala
-reusa base de datos, moodledata y config.php
+reusa codigo, base de datos, moodledata y config.php
 ```
 
 ## Despliegue en Dokploy
@@ -117,6 +133,7 @@ TTL: 300
 - `https://aula.academiamirai.mx` responde sin 404.
 - El root publicado corresponde a `/var/www/moodle/public`.
 - La instalacion por CLI no se repite en un redeploy.
+- Plugins y temas instalados desde la UI sobreviven a reinicios y redeploys.
 - `cron` ejecuta `admin/cli/cron.php` cada minuto.
 - Redis responde y se usa como backend de sesiones.
 - La subida de archivos respeta los limites definidos en `.env`.
@@ -150,6 +167,12 @@ docker compose exec php php /var/www/moodle/admin/cli/cron.php
 docker compose exec php php /var/www/moodle/admin/cli/cfg.php --list
 ```
 
+### Ver version del core persistido
+
+```bash
+./scripts/show-code-version.sh
+```
+
 ## Backups
 
 ### Archivos incluidos
@@ -157,6 +180,7 @@ docker compose exec php php /var/www/moodle/admin/cli/cfg.php --list
 Los scripts de este repo cubren:
 
 ```text
+- Codigo persistente de Moodle
 - Base de datos
 - moodledata
 - config.php persistido
@@ -173,6 +197,12 @@ Por defecto, los respaldos se guardan en:
 
 ```bash
 ./scripts/full-backup.sh
+```
+
+### Respaldar solo el codigo persistente
+
+```bash
+./scripts/backup-code.sh
 ```
 
 ### Restaurar base de datos
@@ -193,21 +223,44 @@ Por defecto, los respaldos se guardan en:
 ./scripts/restore-config.sh /srv/backups/aulamirai/moodle-config-AAAA-MM-DD_hh-mm-ss.tar.gz
 ```
 
-## Actualizacion de Moodle
-
-1. Cambia `MOODLE_GIT_REF` en `.env`.
-2. Redeploy en Dokploy.
-3. Si la nueva version requiere upgrade de base, ejecuta:
+### Restaurar codigo persistente
 
 ```bash
-docker compose exec php php /var/www/moodle/admin/cli/upgrade.php --non-interactive
+./scripts/restore-code.sh /srv/backups/aulamirai/moodle-code-AAAA-MM-DD_hh-mm-ss.tar.gz
 ```
 
-4. Verifica el sitio y ejecuta cron.
+## Actualizacion de Moodle
+
+Los redeploys normales no actualizan el core persistido automaticamente.
+
+Flujo recomendado:
+
+1. Cambia `MOODLE_GIT_REF` en `.env`.
+2. Redeploy en Dokploy para construir la nueva imagen.
+3. Verifica la version embebida disponible:
+
+```bash
+./scripts/show-code-version.sh
+```
+
+4. Sincroniza manualmente el core nuevo al volumen persistido y ejecuta `upgrade.php`:
+
+```bash
+./scripts/upgrade-core.sh
+```
+
+5. Verifica el sitio y ejecuta cron.
+
+### Re-sembrar codigo si el volumen esta vacio
+
+```bash
+./scripts/seed-code.sh
+```
 
 ## Restricciones importantes
 
-- El core de Moodle no es persistente. Si agregas plugins o temas personalizados, deben entrar por build.
-- No escribas cambios manuales dentro del contenedor esperando que sobrevivan a un redeploy.
+- El codigo de Moodle ahora es persistente y forma parte del estado operativo del sitio.
+- Plugins y temas instalados desde Moodle sobreviven a reinicios y redeploys.
+- Los redeploys normales no actualizan el core del volumen; el upgrade se hace manualmente con `./scripts/upgrade-core.sh`.
 - `config.php` no se crea desde el navegador; lo genera el entrypoint.
 - El mapping de caches de aplicacion de Moodle puede hacerse despues desde la UI. La infraestructura ya deja Redis operativo para sesiones desde el inicio.

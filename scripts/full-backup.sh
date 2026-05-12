@@ -9,6 +9,7 @@ mkdir -p "$BACKUP_DIR"
 
 echo "Starting full Moodle backup..."
 
+./scripts/backup-code.sh
 ./scripts/backup-db.sh
 ./scripts/backup-moodledata.sh
 ./scripts/backup-config.sh

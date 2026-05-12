@@ -11,6 +11,8 @@ services:
     depends_on:
       php:
         condition: service_healthy
+    volumes:
+      - moodle_code:/var/www/moodle
     expose:
       - "80"
     healthcheck:
@@ -41,6 +43,7 @@ services:
       redis:
         condition: service_healthy
     volumes:
+      - moodle_code:/var/www/moodle
       - moodledata:/var/www/moodledata
       - moodle_config:/var/www/moodle-state
     expose:
@@ -74,6 +77,7 @@ services:
       sleep 60;
       done"
     volumes:
+      - moodle_code:/var/www/moodle
       - moodledata:/var/www/moodledata
       - moodle_config:/var/www/moodle-state
     networks:
@@ -132,6 +136,7 @@ services:
       - moodle_net
 
 volumes:
+  moodle_code:
   moodledata:
   moodle_config:
   mariadb_data:

@@ -40,6 +40,10 @@ session.use_strict_mode=1
 EOF
 }
 
+seed_code() {
+  /usr/local/bin/moodle-seed-code
+}
+
 render_config() {
   mkdir -p /var/www/moodle-state /var/www/moodledata /var/www/moodledata/localcache
 
@@ -124,7 +128,7 @@ EOF
   chown www-data:www-data "${config_file}"
   ln -sfn /var/www/moodle-state/config.php /var/www/moodle/config.php
   chown -h www-data:www-data /var/www/moodle/config.php
-  chown -R www-data:www-data /var/www/moodle-state /var/www/moodledata
+  chown -R www-data:www-data /var/www/moodle-state /var/www/moodledata /var/www/moodle
 }
 
 wait_for_db() {
@@ -239,6 +243,7 @@ bootstrap() {
   fi
 
   render_php_ini
+  seed_code
   render_config
   wait_for_db
   wait_for_redis

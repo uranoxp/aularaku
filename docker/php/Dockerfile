@@ -20,6 +20,7 @@ RUN apk add --no-cache \
       libxml2 \
       libzip \
       mariadb-client \
+      rsync \
       redis \
       su-exec \
       tzdata \
@@ -52,13 +53,16 @@ RUN apk add --no-cache \
     && apk del .build-deps \
     && rm -rf /tmp/pear
 
-COPY --from=moodle-source /src/moodle /var/www/moodle
+COPY --from=moodle-source /src/moodle /opt/moodle-dist
 COPY docker/php/entrypoint.sh /usr/local/bin/moodle-entrypoint
+COPY docker/php/seed-code.sh /usr/local/bin/moodle-seed-code
+COPY docker/php/sync-core.sh /usr/local/bin/moodle-sync-core
+COPY docker/php/code-version.sh /usr/local/bin/moodle-code-version
 COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/10-opcache.ini
 
-RUN mkdir -p /var/www/moodle-state /var/www/moodledata \
-    && chown -R www-data:www-data /var/www/moodle /var/www/moodle-state /var/www/moodledata \
-    && chmod +x /usr/local/bin/moodle-entrypoint
+RUN mkdir -p /var/www/moodle /var/www/moodle-state /var/www/moodledata \
+    && chown -R www-data:www-data /opt/moodle-dist /var/www/moodle /var/www/moodle-state /var/www/moodledata \
+    && chmod +x /usr/local/bin/moodle-entrypoint /usr/local/bin/moodle-seed-code /usr/local/bin/moodle-sync-core /usr/local/bin/moodle-code-version
 
 WORKDIR /var/www/moodle
 
@@ -69,7 +73,6 @@ FROM nginx:1.27-alpine AS nginx-runtime
 
 ARG MOODLE_GIT_REF=MOODLE_502_STABLE
 
-COPY --from=moodle-source /src/moodle /var/www/moodle
 COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 
 WORKDIR /var/www/moodle
