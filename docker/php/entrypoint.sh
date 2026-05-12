@@ -194,8 +194,7 @@ run_install() {
     --shortname="${MOODLE_SITE_SHORTNAME}" \
     --summary="${MOODLE_SITE_SUMMARY}" \
     --lang="${MOODLE_INSTALL_LANG:-en}" \
-    ${support_flag} \
-    --non-interactive
+    ${support_flag}
 
   su-exec www-data php /var/www/moodle/admin/cli/cfg.php --name=timezone --set="${TZ}"
 
