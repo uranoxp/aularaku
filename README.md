@@ -144,7 +144,7 @@ TTL: 300
 - El root publicado corresponde a `/var/www/moodle/public`.
 - La instalacion por CLI no se repite en un redeploy.
 - Plugins y temas instalados desde la UI sobreviven a reinicios y redeploys.
-- `cron` ejecuta `admin/cli/cron.php` cada minuto.
+- `cron` ejecuta `admin/cli/cron.php` cada minuto mediante `crond`.
 - Redis responde y se usa como backend de sesiones.
 - La subida de archivos respeta los limites definidos en `.env`.
 

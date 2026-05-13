@@ -24,7 +24,7 @@ La entrega genera un stack listo para Dokploy con estas decisiones:
 - Nginx con root en /var/www/moodle/public
 - Instalacion inicial automatizada por CLI
 - Config.php generado en runtime y persistido fuera de la imagen
-- Cron separado
+- Cron separado con `crond` ejecutando Moodle cada minuto
 - Backups de codigo + DB + moodledata + config.php
 ```
 
