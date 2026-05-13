@@ -172,6 +172,51 @@ table_exists() {
   [ -n "${table_name}" ]
 }
 
+finalize_admin_bootstrap() {
+  if ! table_exists; then
+    return 0
+  fi
+
+  echo "Ensuring admin bootstrap is complete..."
+
+  su-exec www-data php -r '
+  require "/var/www/moodle/config.php";
+  global $DB;
+
+  $admin = get_admin();
+  if (!$admin) {
+      fwrite(STDERR, "Admin user not found.\n");
+      exit(1);
+  }
+
+  $update = (object)["id" => $admin->id];
+  $targetuser = getenv("MOODLE_ADMIN_USER");
+  $targetpass = getenv("MOODLE_ADMIN_PASSWORD");
+  $targetemail = getenv("MOODLE_ADMIN_EMAIL");
+
+  if (!empty($targetuser)) {
+      $update->username = $targetuser;
+  }
+  if (!empty($targetemail)) {
+      $update->email = $targetemail;
+  }
+  if (!empty($targetpass)) {
+      $update->password = hash_internal_user_password($targetpass);
+  }
+
+  $DB->update_record("user", $update);
+  set_config("rolesactive", 1);
+  unset_config("adminsetuppending");
+  ' 
+
+  MYSQL_PWD="${MOODLE_DB_PASSWORD}" mariadb \
+    --host="${MOODLE_DB_HOST}" \
+    --port="${MOODLE_DB_PORT}" \
+    --user="${MOODLE_DB_USER}" \
+    --database="${MOODLE_DB_NAME}" \
+    --execute="UPDATE ${MOODLE_DB_PREFIX}user SET lastip='' WHERE id=1 OR username='${MOODLE_ADMIN_USER}';" >/dev/null 2>&1 || true
+}
+
 run_install() {
   if table_exists; then
     echo "Moodle database already exists. Skipping installation."
@@ -203,12 +248,7 @@ run_install() {
   su-exec www-data php /var/www/moodle/admin/cli/cfg.php --name=timezone --set="${TZ}"
   su-exec www-data php /var/www/moodle/admin/cli/cfg.php --name=adminsetuppending --unset || true
 
-  MYSQL_PWD="${MOODLE_DB_PASSWORD}" mariadb \
-    --host="${MOODLE_DB_HOST}" \
-    --port="${MOODLE_DB_PORT}" \
-    --user="${MOODLE_DB_USER}" \
-    --database="${MOODLE_DB_NAME}" \
-    --execute="UPDATE ${MOODLE_DB_PREFIX}user SET lastip='' WHERE username='${MOODLE_ADMIN_USER}';" >/dev/null 2>&1 || true
+  finalize_admin_bootstrap
 }
 
 wait_until_installed() {
@@ -252,6 +292,7 @@ bootstrap() {
   case "${MOODLE_RUNTIME_ROLE:-web}" in
     web)
       run_install
+      finalize_admin_bootstrap
       ;;
     cron)
       wait_until_installed
