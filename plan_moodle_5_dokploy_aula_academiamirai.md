@@ -138,7 +138,8 @@ En el primer arranque:
 4. revisa si la base ya esta instalada
 5. si no existe, ejecuta admin/cli/install_database.php
 6. aplica timezone y corrige el caso installhijacked
-7. arranca php-fpm
+7. cierra adminsetuppending para no depender del paso final web
+8. arranca php-fpm
 ```
 
 En redeploys posteriores:

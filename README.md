@@ -89,8 +89,9 @@ En el primer deploy:
 5. Verifica si la tabla `${MOODLE_DB_PREFIX}config` ya existe.
 6. Si no existe y `MOODLE_AUTO_INSTALL=1`, ejecuta `admin/cli/install_database.php`.
 7. Ajusta timezone via `admin/cli/cfg.php`.
-8. Limpia el `lastip` del admin para evitar el error `installhijacked`.
-9. Arranca `php-fpm`.
+8. Cierra `adminsetuppending` para no depender del paso final web de instalacion.
+9. Limpia el `lastip` del admin para evitar residuos del flujo de instalacion.
+10. Arranca `php-fpm`.
 
 En redeploys posteriores:
 

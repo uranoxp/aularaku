@@ -201,6 +201,7 @@ run_install() {
     ${support_flag}
 
   su-exec www-data php /var/www/moodle/admin/cli/cfg.php --name=timezone --set="${TZ}"
+  su-exec www-data php /var/www/moodle/admin/cli/cfg.php --name=adminsetuppending --unset || true
 
   MYSQL_PWD="${MOODLE_DB_PASSWORD}" mariadb \
     --host="${MOODLE_DB_HOST}" \
