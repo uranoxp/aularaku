@@ -180,6 +180,7 @@ finalize_admin_bootstrap() {
   echo "Ensuring admin bootstrap is complete..."
 
   su-exec www-data php -r '
+  define("CLI_SCRIPT", true);
   require "/var/www/moodle/config.php";
   global $DB;
 
