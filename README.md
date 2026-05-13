@@ -17,6 +17,15 @@ document root => /var/www/moodle/public
 - Redis configurado desde `config.php` para sesiones.
 - Scripts de backup y restauracion para codigo, DB, `moodledata` y `config.php`.
 
+Para Dokploy + Traefik con un solo dominio publico:
+
+```text
+MOODLE_REVERSE_PROXY=0
+MOODLE_SSL_PROXY=1
+```
+
+`reverseproxy` no debe activarse en el caso normal de un solo URL publico, porque Moodle puede detectar abuso del proxy si el `Host` externo llega sin cambiar al backend.
+
 ## Estructura
 
 ```text

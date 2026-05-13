@@ -88,7 +88,7 @@ global \$CFG;
 \$CFG->timezone = '${timezone_value}';
 EOF
 
-  if is_true "${MOODLE_REVERSE_PROXY:-1}"; then
+  if is_true "${MOODLE_REVERSE_PROXY:-0}"; then
     cat >> "${config_file}" <<'EOF'
 $CFG->reverseproxy = true;
 EOF

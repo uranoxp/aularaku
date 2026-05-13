@@ -211,7 +211,18 @@ Valor: IP_DEL_VPS
 
 La implementacion deja Redis definido desde variables y configurado en `config.php` para sesiones. El mapeo fino de caches de aplicacion puede hacerse despues desde la administracion de Moodle sin cambiar la infraestructura.
 
-### 7.4 Backups
+### 7.4 Proxy y SSL
+
+Para Dokploy + Traefik con un unico dominio publico, la configuracion recomendada es:
+
+```text
+MOODLE_REVERSE_PROXY=0
+MOODLE_SSL_PROXY=1
+```
+
+En este escenario, `sslproxy` debe permanecer activo por la terminacion TLS en Traefik, pero `reverseproxy` debe quedar desactivado para evitar el error `reverseproxyabused`.
+
+### 7.5 Backups
 
 El flujo minimo de restauracion ya contempla:
 
