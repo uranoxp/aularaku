@@ -26,6 +26,7 @@ La entrega genera un stack listo para Dokploy con estas decisiones:
 - Config.php generado en runtime y persistido fuera de la imagen
 - Cron separado con `crond` ejecutando Moodle cada minuto con `--keep-alive=0`
 - Backups de codigo + DB + moodledata + config.php
+- Bootstrap del admin idempotente: repara instalaciones parciales sin sobreescribir cambios operativos del perfil en cada redeploy
 ```
 
 ---

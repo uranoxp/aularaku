@@ -190,32 +190,59 @@ finalize_admin_bootstrap() {
       exit(1);
   }
 
-  $update = (object)["id" => $admin->id];
+  $pending = !empty(get_config("core", "adminsetuppending"));
+  $rolesactive = (int)get_config("core", "rolesactive");
   $targetuser = getenv("MOODLE_ADMIN_USER");
   $targetpass = getenv("MOODLE_ADMIN_PASSWORD");
   $targetemail = getenv("MOODLE_ADMIN_EMAIL");
+  $targetsite = getenv("MOODLE_DEFAULT_LANG");
+  $targetadminlang = getenv("MOODLE_ADMIN_LANG");
+  if (empty($targetadminlang)) {
+      $targetadminlang = $targetsite;
+  }
 
-  if (!empty($targetuser)) {
+  $needsrepair = $pending || empty($admin->email) || $rolesactive !== 1;
+  $needslangbootstrap = (!empty($targetsite) && empty(get_config("core", "lang")))
+      || (!empty($targetadminlang) && empty($admin->lang));
+
+  if (!$needsrepair && !$needslangbootstrap) {
+      exit(0);
+  }
+
+  $update = (object)["id" => $admin->id];
+  $hasupdates = false;
+
+  if ($pending && !empty($targetuser) && $admin->username !== $targetuser) {
       $update->username = $targetuser;
+      $hasupdates = true;
   }
-  if (!empty($targetemail)) {
+  if (($pending || empty($admin->email)) && !empty($targetemail) && $admin->email !== $targetemail) {
       $update->email = $targetemail;
+      $hasupdates = true;
   }
-  if (!empty($targetpass)) {
+  if ($pending && !empty($targetpass)) {
       $update->password = hash_internal_user_password($targetpass);
+      $hasupdates = true;
+  }
+  if (!empty($targetadminlang) && empty($admin->lang)) {
+      $update->lang = $targetadminlang;
+      $hasupdates = true;
   }
 
-  $DB->update_record("user", $update);
-  set_config("rolesactive", 1);
-  unset_config("adminsetuppending");
-  ' 
-
-  MYSQL_PWD="${MOODLE_DB_PASSWORD}" mariadb \
-    --host="${MOODLE_DB_HOST}" \
-    --port="${MOODLE_DB_PORT}" \
-    --user="${MOODLE_DB_USER}" \
-    --database="${MOODLE_DB_NAME}" \
-    --execute="UPDATE ${MOODLE_DB_PREFIX}user SET lastip='' WHERE id=1 OR username='${MOODLE_ADMIN_USER}';" >/dev/null 2>&1 || true
+  if ($hasupdates) {
+      $DB->update_record("user", $update);
+  }
+  if ($rolesactive !== 1) {
+      set_config("rolesactive", 1);
+  }
+  if ($pending) {
+      unset_config("adminsetuppending");
+      $DB->set_field("user", "lastip", "", ["id" => $admin->id]);
+  }
+  if (!empty($targetsite) && empty(get_config("core", "lang"))) {
+      set_config("lang", $targetsite);
+  }
+  '
 }
 
 run_install() {

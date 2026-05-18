@@ -65,6 +65,8 @@ MOODLE_SSL_PROXY=1
 MOODLE_URL
 MOODLE_ADMIN_PASSWORD
 MOODLE_ADMIN_EMAIL
+MOODLE_DEFAULT_LANG
+MOODLE_ADMIN_LANG
 MOODLE_DB_PASSWORD
 MOODLE_DB_ROOT_PASSWORD
 ```
@@ -144,9 +146,12 @@ TTL: 300
 - El root publicado corresponde a `/var/www/moodle/public`.
 - La instalacion por CLI no se repite en un redeploy.
 - Plugins y temas instalados desde la UI sobreviven a reinicios y redeploys.
+- El bootstrap del admin solo repara instalaciones incompletas; no vuelve a imponer `username`, `email` o `password` en redeploys normales.
 - `cron` ejecuta `admin/cli/cron.php --keep-alive=0` cada minuto mediante `crond`, evitando que una sola corrida permanezca viva varios segundos extra y distorsione el intervalo reportado por Moodle.
 - Redis responde y se usa como backend de sesiones.
 - La subida de archivos respeta los limites definidos en `.env`.
+
+Si quieres que el sitio nazca con `Español - Mexico`, usa `MOODLE_DEFAULT_LANG=es_mx`. Si tambien quieres que el perfil inicial del admin quede con ese idioma, agrega `MOODLE_ADMIN_LANG=es_mx`. Esos valores solo se aplican cuando el sitio todavia no tiene ese dato configurado, asi que no te pisan cambios hechos luego desde la UI.
 
 ## Operacion diaria
 
