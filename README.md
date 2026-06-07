@@ -1,16 +1,16 @@
-# Moodle 5.2 en Dokploy para `aula.academiamirai.mx`
+# Moodle 5.0.7 en Dokploy para `aula.academiamirai.mx`
 
-Este repo prepara un despliegue reproducible de **Moodle 5.2.x** sobre **Dokploy** usando **Docker Compose**, con `PHP-FPM 8.3`, `MariaDB 10.11`, `Redis 7`, `Nginx` y un contenedor separado para `cron`.
+Este repo prepara un despliegue reproducible de **Moodle 5.0.7** sobre **Dokploy** usando **Docker Compose**, con `PHP-FPM 8.3`, `MariaDB 10.11`, `Redis 7`, `Nginx` y un contenedor separado para `cron`.
 
-La arquitectura esta adaptada al cambio introducido desde Moodle 5.1:
+La arquitectura para `v5.0.7` mantiene el layout clasico de Moodle:
 
 ```text
-document root => /var/www/moodle/public
+document root => /var/www/moodle
 ```
 
 ## Que incluye
 
-- Imagen PHP construida desde el Git oficial de Moodle (`MOODLE_502_STABLE` por defecto).
+- Imagen PHP construida desde el Git oficial de Moodle (`v5.0.7` por defecto).
 - Volumen persistente compartido para `/var/www/moodle`, visible para `php`, `nginx` y `cron`.
 - `config.php` generado automaticamente en el arranque y persistido fuera de la imagen.
 - Instalacion inicial por CLI con comportamiento idempotente.
@@ -143,7 +143,8 @@ TTL: 300
 ## Verificaciones recomendadas
 
 - `https://aula.academiamirai.mx` responde sin 404.
-- El root publicado corresponde a `/var/www/moodle/public`.
+- El root publicado corresponde a `/var/www/moodle`.
+- Si en el futuro regresamos a Moodle `5.1+`, ahi si habra que volver a publicar `/var/www/moodle/public`.
 - La instalacion por CLI no se repite en un redeploy.
 - Plugins y temas instalados desde la UI sobreviven a reinicios y redeploys.
 - El bootstrap del admin solo repara instalaciones incompletas; no vuelve a imponer `username`, `email` o `password` en redeploys normales.
@@ -256,6 +257,12 @@ Flujo recomendado:
 
 ```bash
 ./scripts/show-code-version.sh
+```
+
+La version por defecto de este repo queda pineada a `v5.0.7`. Si ya tienes un volumen `moodle_code` sembrado con otra version, recuerda correr tambien:
+
+```bash
+./scripts/upgrade-core.sh
 ```
 
 4. Sincroniza manualmente el core nuevo al volumen persistido y ejecuta `upgrade.php`:

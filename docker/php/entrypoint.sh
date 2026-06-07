@@ -80,7 +80,7 @@ global \$CFG;
 \$CFG->wwwroot = '${moodle_url}';
 \$CFG->dataroot = '/var/www/moodledata';
 \$CFG->dirroot = '/var/www/moodle';
-\$CFG->libdir = '/var/www/moodle/public';
+\$CFG->libdir = '/var/www/moodle/lib';
 \$CFG->routerconfigured = false;
 \$CFG->admin = 'admin';
 \$CFG->directorypermissions = 02775;

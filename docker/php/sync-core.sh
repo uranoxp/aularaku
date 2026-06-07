@@ -11,12 +11,12 @@ cleanup() {
 }
 trap cleanup EXIT
 
-if [ ! -f "${SOURCE_DIR}/public/lib/setup.php" ]; then
+if [ ! -f "${SOURCE_DIR}/lib/setup.php" ]; then
   echo "Moodle source tree not found in image: ${SOURCE_DIR}" >&2
   exit 1
 fi
 
-if [ ! -f "${TARGET_DIR}/public/lib/setup.php" ]; then
+if [ ! -f "${TARGET_DIR}/lib/setup.php" ]; then
   echo "Persistent Moodle code volume is empty. Run moodle-seed-code first." >&2
   exit 1
 fi

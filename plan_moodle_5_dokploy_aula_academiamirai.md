@@ -1,27 +1,27 @@
 # Plan maestro para Codex
-## Despliegue de Moodle 5.2 con Dokploy en `aula.academiamirai.mx`
+## Despliegue de Moodle 5.0.7 con Dokploy en `aula.academiamirai.mx`
 
 **Proyecto:** Aula Academia Mirai  
 **Dominio:** `https://aula.academiamirai.mx`  
 **Stack implementado:** Dokploy + Docker Compose + Nginx + PHP-FPM + MariaDB + Redis + Cron  
-**Version objetivo:** Moodle 5.2.x  
-**Referencia Git por defecto:** `MOODLE_502_STABLE`  
+**Version objetivo:** Moodle 5.0.7  
+**Referencia Git por defecto:** `v5.0.7`  
 **Zona horaria:** `America/Mexico_City`
 
 ---
 
 ## 1. Objetivo
 
-Este proyecto ya no apunta a Moodle 5.0. La implementacion actual queda alineada con **Moodle 5.2**, que al **12 de mayo de 2026** es una rama estable vigente y con mejor vida util para un despliegue nuevo.
+Este proyecto queda alineado con **Moodle 5.0.7**, publicado el **20 de abril de 2026**, para fijar una version puntual del core en la imagen.
 
 La entrega genera un stack listo para Dokploy con estas decisiones:
 
 ```text
-- Moodle 5.2.x
+- Moodle 5.0.7
 - PHP-FPM 8.3
 - MariaDB 10.11
 - Redis 7
-- Nginx con root en /var/www/moodle/public
+- Nginx con root en /var/www/moodle
 - Instalacion inicial automatizada por CLI
 - Config.php generado en runtime y persistido fuera de la imagen
 - Cron separado con `crond` ejecutando Moodle cada minuto con `--keep-alive=0`
@@ -31,15 +31,15 @@ La entrega genera un stack listo para Dokploy con estas decisiones:
 
 ---
 
-## 2. Cambio clave respecto a Moodle 5.0
+## 2. Cambio clave de estructura
 
-Desde Moodle 5.1, Moodle mueve el contenido web accesible a `public/`.
+El tag oficial `v5.0.7` todavia usa el layout clasico, sin `public/` como document root.
 
-Por eso, para Moodle 5.2:
+Por eso, para Moodle 5.0.7:
 
 ```text
 NO usar /var/www/html
-SI usar /var/www/moodle/public
+SI usar /var/www/moodle
 ```
 
 El sitio publicado vive en:
@@ -57,23 +57,22 @@ La imagen conserva una copia maestra para seed inicial y upgrade manual en:
 Y Nginx sirve el sitio desde:
 
 ```text
-/var/www/moodle/public
+/var/www/moodle
 ```
 
 ---
 
 ## 3. Estado de soporte tomado para esta implementacion
 
-Referencia oficial tomada al **12 de mayo de 2026**:
+Referencia oficial tomada al **5 de junio de 2026**:
 
 ```text
-Moodle 5.0  -> soporte general terminado el 20 de abril de 2026
-Moodle 5.1  -> soporte general hasta el 5 de octubre de 2026
-Moodle 5.2  -> soporte general hasta el 19 de abril de 2027
-Moodle 5.3  -> siguiente LTS, aun no disponible
+Moodle 5.0.7 -> release del 20 de abril de 2026
+Moodle 5.0   -> soporte general terminado el 20 de abril de 2026
+Moodle 5.0   -> soporte de seguridad hasta el 5 de octubre de 2026
 ```
 
-Por eso este proyecto queda en `5.2` y no espera a `5.3`.
+Por eso este proyecto queda pineado a `v5.0.7`, aunque no sea una rama con soporte general vigente.
 
 ---
 
@@ -92,7 +91,7 @@ Servicio nginx:80
    ↓
 PHP-FPM
    ↓
-Moodle 5.2 (/var/www/moodle/public)
+Moodle 5.0.7 (/var/www/moodle)
    ↓
 MariaDB + Redis + moodle_code + moodledata + config persistido
 ```
@@ -248,8 +247,9 @@ Ruta por defecto de respaldos en el host:
 ## 8. Referencias oficiales usadas
 
 - Moodle Releases: https://moodledev.io/general/releases
-- Moodle 5.2 Release Notes: https://moodledev.io/general/releases/5.2
-- Moodle 5.2 Code Restructure: https://moodledev.io/docs/5.2/guides/restructure
+- Moodle 5.0 Release Notes: https://moodledev.io/general/releases/5.0
+- Moodle 5.0.7 Release Notes: https://moodledev.io/general/releases/5.0/5.0.7
+- Moodle Directory Restructure project: https://moodledev.io/general/projects/directoryrestructure
 - Moodle Installing Moodle: https://docs.moodle.org/en/Installing_Moodle
 - Moodle CLI scripts: https://docs.moodle.org/en/CLI_scripts
 - Moodle Redis session handling: https://docs.moodle.org/en/Session_handling
