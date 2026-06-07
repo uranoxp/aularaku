@@ -2,7 +2,7 @@
 set -euo pipefail
 
 DATE="$(date +%Y-%m-%d_%H-%M-%S)"
-BACKUP_DIR="${BACKUP_DIR:-/srv/backups/aulamirai}"
+BACKUP_DIR="${BACKUP_DIR:-/srv/backups/aularaku}"
 mkdir -p "$BACKUP_DIR"
 
 OUTPUT_FILE="$BACKUP_DIR/moodle-config-$DATE.tar.gz"

@@ -206,7 +206,7 @@ Los scripts de este repo cubren:
 Por defecto, los respaldos se guardan en:
 
 ```text
-/srv/backups/aulamirai
+/srv/backups/aularaku
 ```
 
 ### Ejecutar backup completo
@@ -224,25 +224,25 @@ Por defecto, los respaldos se guardan en:
 ### Restaurar base de datos
 
 ```bash
-./scripts/restore-db.sh /srv/backups/aulamirai/moodle-db-AAAA-MM-DD_hh-mm-ss.sql.gz
+./scripts/restore-db.sh /srv/backups/aularaku/moodle-db-AAAA-MM-DD_hh-mm-ss.sql.gz
 ```
 
 ### Restaurar moodledata
 
 ```bash
-./scripts/restore-moodledata.sh /srv/backups/aulamirai/moodledata-AAAA-MM-DD_hh-mm-ss.tar.gz
+./scripts/restore-moodledata.sh /srv/backups/aularaku/moodledata-AAAA-MM-DD_hh-mm-ss.tar.gz
 ```
 
 ### Restaurar config.php
 
 ```bash
-./scripts/restore-config.sh /srv/backups/aulamirai/moodle-config-AAAA-MM-DD_hh-mm-ss.tar.gz
+./scripts/restore-config.sh /srv/backups/aularaku/moodle-config-AAAA-MM-DD_hh-mm-ss.tar.gz
 ```
 
 ### Restaurar codigo persistente
 
 ```bash
-./scripts/restore-code.sh /srv/backups/aulamirai/moodle-code-AAAA-MM-DD_hh-mm-ss.tar.gz
+./scripts/restore-code.sh /srv/backups/aularaku/moodle-code-AAAA-MM-DD_hh-mm-ss.tar.gz
 ```
 
 ## Actualizacion de Moodle
