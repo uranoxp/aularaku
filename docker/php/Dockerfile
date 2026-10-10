@@ -60,6 +60,7 @@ COPY docker/php/sync-core.sh /usr/local/bin/moodle-sync-core
 COPY docker/php/code-version.sh /usr/local/bin/moodle-code-version
 COPY docker/php/moodle.crontab /etc/crontabs/root
 COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/10-opcache.ini
+COPY docker/php/fpm-pool.conf /usr/local/etc/php-fpm.d/zz-moodle.conf
 
 RUN mkdir -p /var/www/moodle /var/www/moodle-state /var/www/moodledata \
     && chown -R www-data:www-data /opt/moodle-dist /var/www/moodle /var/www/moodle-state /var/www/moodledata \
