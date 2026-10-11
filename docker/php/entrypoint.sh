@@ -79,6 +79,10 @@ global \$CFG;
 
 \$CFG->wwwroot = '${moodle_url}';
 \$CFG->dataroot = '/var/www/moodledata';
+\$CFG->xsendfile = 'X-Accel-Redirect';
+\$CFG->xsendfilealiases = array(
+  '/dataroot/' => \$CFG->dataroot,
+);
 \$CFG->dirroot = '/var/www/moodle';
 \$CFG->libdir = '/var/www/moodle/lib';
 \$CFG->routerconfigured = false;

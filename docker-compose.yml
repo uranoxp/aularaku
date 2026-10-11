@@ -13,6 +13,7 @@ services:
         condition: service_healthy
     volumes:
       - moodle_code:/var/www/moodle
+      - moodledata:/var/www/moodledata:ro
     expose:
       - "80"
     healthcheck:
